@@ -9,6 +9,7 @@ class Tags(commands.Cog):
     """Tag commands"""
 
     @commands.command(aliases=["t"])
+    @commands.cooldown(1, 3, type=commands.BucketType.channel)
     @commands.guild_only()
     async def tag(self, ctx: commands.Context, *, tag: str):
         """Posts an embed from the help channel"""
