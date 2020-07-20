@@ -19,7 +19,10 @@ class Tags(commands.Cog):
 
         async for message in help_channel.history(limit=50):
             for embed in message.embeds:
-                if embed.footer is discord.Embed.Empty:
+                if (
+                    embed.footer is discord.Embed.Empty
+                    or embed.footer.text is discord.Embed.Empty
+                ):
                     continue
 
                 tags = embed.footer.text.replace("Tags: ", "", 1).split(", ")
