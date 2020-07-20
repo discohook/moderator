@@ -8,7 +8,7 @@ from discord.utils import get
 class Tags(commands.Cog):
     """Tag commands"""
 
-    @commands.command()
+    @commands.command(aliases=["t"])
     @commands.guild_only()
     async def tag(self, ctx: commands.Context, *, tag: str):
         """Posts an embed from the help channel"""
