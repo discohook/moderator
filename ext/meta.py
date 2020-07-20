@@ -119,13 +119,15 @@ class Meta(commands.Cog):
     async def about(self, ctx: commands.Context):
         """Gives information about this bot"""
 
-        embed = discord.Embed(title="About", description=self.bot.description)
-
-        await ctx.send(embed=embed)
+        await ctx.send(
+            embed=discord.Embed(title="About", description=self.bot.description)
+        )
 
     @commands.command()
     @commands.cooldown(3, 8, commands.BucketType.channel)
     async def invite(self, ctx: commands.Context):
+        """This bot is private"""
+
         await ctx.send(
             embed=discord.Embed(title="Invite", description="This bot is private")
         )
