@@ -12,6 +12,7 @@ environ.setdefault("JISHAKU_HIDE", "true")
 
 extensions = (
     "jishaku",
+    "ext.autorole",
     "ext.meta",
     "ext.tags",
 )
