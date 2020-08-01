@@ -24,8 +24,12 @@ class Autorole(commands.Cog):
             autorole = get(guild.roles, name="Member")
 
             for member in guild.members:
-                if autorole.id not in [role.id for role in member.roles]:
-                    await member.add_roles(autorole)
+                if member.bot:
+                    continue
+                if autorole.id in [role.id for role in member.roles]:
+                    continue
+
+                await member.add_roles(autorole)
 
     @add_roles.before_loop
     async def before_add_roles(self):
