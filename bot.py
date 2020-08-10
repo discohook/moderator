@@ -41,7 +41,7 @@ class Bot(commands.AutoShardedBot):
             command_prefix=self._get_prefixes,
             description="Private moderation bot for the Discohook server",
             activity=discord.Activity(
-                type=discord.ActivityType.watching, name="the server | !help"
+                type=discord.ActivityType.watching, name="the server | m help"
             ),
         )
 
@@ -49,7 +49,7 @@ class Bot(commands.AutoShardedBot):
             self.load_extension(extension)
 
     def _get_prefixes(self, bot, message):
-        return ("!", "! ", f"<@{self.user.id}> ", f"<@!{self.user.id}> ")
+        return ("m ", f"<@{self.user.id}> ", f"<@!{self.user.id}> ")
 
     async def on_ready(self):
         print(f"Ready as {self.user} ({self.user.id})")
@@ -69,7 +69,7 @@ class Bot(commands.AutoShardedBot):
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             await message.channel.send(
-                embed=discord.Embed(title="Prefix", description="My prefix is `!`")
+                embed=discord.Embed(title="Prefix", description="My prefix is `m`")
             )
             return
 
