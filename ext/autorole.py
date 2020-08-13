@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands, tasks
@@ -16,9 +17,11 @@ class Autorole(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         autorole = get(member.guild.roles, name="Member")
-        await member.add_roles(autorole)
+        restricted = get(member.guild.roles, name="Restricted")
 
-    @tasks.loop(minutes=5.0)
+        await member.add_roles(autorole, restricted)
+
+    @tasks.loop(minutes=1)
     async def add_roles(self):
         for guild in self.bot.guilds:
             autorole = get(guild.roles, name="Member")
@@ -30,6 +33,18 @@ class Autorole(commands.Cog):
                     continue
 
                 await member.add_roles(autorole)
+
+            restricted = get(guild.roles, name="Restricted")
+
+            for member in guild.members:
+                if member.bot:
+                    continue
+                if restricted.id not in [role.id for role in member.roles]:
+                    continue
+                if member.joined_at > datetime.utcnow() - timedelta(minutes=15):
+                    continue
+
+                await member.remove_roles(restricted)
 
     @add_roles.before_loop
     async def before_add_roles(self):
