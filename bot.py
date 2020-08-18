@@ -58,14 +58,15 @@ class Bot(commands.AutoShardedBot):
         if message.author.bot:
             return
 
-        for (pattern, error) in message_filters:
-            if pattern.search(message.content):
-                await message.delete()
-                await message.channel.send(
-                    embed=discord.Embed(title="Message filter", description=error),
-                    delete_after=5.0,
-                )
-                return
+        if not message.channel.permissions_for(message.author).manage_messages:
+            for (pattern, error) in message_filters:
+                if pattern.search(message.content):
+                    await message.delete()
+                    await message.channel.send(
+                        embed=discord.Embed(title="Message filter", description=error),
+                        delete_after=5.0,
+                    )
+                    return
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             await message.channel.send(
