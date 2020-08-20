@@ -14,6 +14,7 @@ extensions = (
     "jishaku",
     "ext.autorole",
     "ext.meta",
+    "ext.filter",
     "ext.tags",
 )
 
@@ -22,17 +23,6 @@ error_types = (
     (commands.UserInputError, "Bad input"),
     (commands.CheckFailure, "Check failed"),
 )
-
-message_filters = [
-    (
-        re.compile(r"discord[.\s]?gg|discord(?:app)?.com\/invite"),
-        "Remove invites from your message",
-    ),
-    (
-        re.compile(r"discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+"),
-        "Don't share your webhook URL! They can be abused by anyone to spam your server.",
-    ),
-]
 
 
 class Bot(commands.AutoShardedBot):
@@ -57,16 +47,6 @@ class Bot(commands.AutoShardedBot):
     async def on_message(self, message):
         if message.author.bot:
             return
-
-        if not message.channel.permissions_for(message.author).manage_messages:
-            for (pattern, error) in message_filters:
-                if pattern.search(message.content):
-                    await message.delete()
-                    await message.channel.send(
-                        embed=discord.Embed(title="Message filter", description=error),
-                        delete_after=5.0,
-                    )
-                    return
 
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
             await message.channel.send(
