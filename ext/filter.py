@@ -24,6 +24,9 @@ class Filter(commands.Cog):
         super().__init__()
 
     async def filter(self, message: discord.Message):
+        if not message.guild:
+            return
+
         if message.channel.permissions_for(message.author).manage_messages:
             return
 
