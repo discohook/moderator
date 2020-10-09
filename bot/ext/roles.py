@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 from discord.utils import get
 
 
-class Autorole(commands.Cog):
+class Roles(commands.Cog):
     """Autorole module"""
 
     def __init__(self, bot):
@@ -52,4 +52,4 @@ class Autorole(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Autorole(bot))
+    bot.add_cog(Roles(bot))

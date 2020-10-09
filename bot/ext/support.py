@@ -1,12 +1,17 @@
 import re
 
 import discord
+from bot.utils import wrap_in_code
 from discord.ext import commands
 from discord.utils import get
 
 
-class Tags(commands.Cog):
-    """Tag commands"""
+class Support(commands.Cog):
+    """Support specific commands"""
+
+    def __init__(self, bot):
+        self.bot = bot
+        super().__init__()
 
     @commands.command(aliases=["t"])
     @commands.cooldown(1, 3, type=commands.BucketType.channel)
@@ -34,15 +39,8 @@ class Tags(commands.Cog):
                 await ctx.send(embed=embed)
                 return
 
-        safe_tag = tag.replace("`", "\u200b`\u200b")
-
-        await ctx.send(
-            embed=discord.Embed(
-                title="Not found",
-                description=f"Could not find embed from {help_channel.mention} with tag ``{safe_tag}``.",
-            )
-        )
+        raise commands.BadArgument(f"Tag {wrap_in_code(tag)} not found.")
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Tags(bot))
+    bot.add_cog(Support(bot))
