@@ -23,7 +23,9 @@ class Bot(commands.AutoShardedBot):
             command_prefix=self.get_prefix_list,
             description="Discohook's private moderation bot.",
             help_command=None,
-            activity=discord.Game(name="at discohook.app | d.help"),
+            activity=discord.Activity(
+                type=discord.ActivityType.watching, name="the server | m.help"
+            ),
             allowed_mentions=discord.AllowedMentions.none(),
             intents=discord.Intents.all(),
             member_cache_flags=discord.MemberCacheFlags.all(),
