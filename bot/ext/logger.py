@@ -59,7 +59,7 @@ class Logger(commands.Cog):
                 )
                 await conn.execute(
                     """
-                    INSERT INTO message_history (message_id, edited_at, content)
+                    INSERT INTO message_history (message_id, version_at, content)
                     VALUES ($1, $2, $3)
                     """,
                     message.id,
@@ -76,29 +76,29 @@ class Logger(commands.Cog):
         ):
             return
 
-        edited_at = datetime.strptime(
+        version_at = datetime.strptime(
             event.data["edited_timestamp"], "%Y-%m-%dT%H:%M:%S.%f%z"
         ).replace(tzinfo=None)
 
         await self.bot.db.execute(
             """
-            INSERT INTO message_history (message_id, edited_at, content)
+            INSERT INTO message_history (message_id, version_at, content)
             VALUES ($1, $2, $3)
             """,
             event.message_id,
-            edited_at,
+            version_at,
             event.data["content"],
         )
 
         old_content = await self.bot.db.fetchval(
             """
             SELECT content FROM message_history
-            WHERE message_id = $1 AND edited_at < $2
-            ORDER BY edited_at DESC
+            WHERE message_id = $1 AND version_at < $2
+            ORDER BY version_at DESC
             LIMIT 1
             """,
             event.message_id,
-            edited_at,
+            version_at,
         )
 
         channel = self.bot.get_channel(event.channel_id)
@@ -125,7 +125,7 @@ class Logger(commands.Cog):
             SELECT message_history.content, message_metadata.author_id FROM message_history
             JOIN message_metadata ON (message_metadata.message_id = message_history.message_id)
             WHERE message_history.message_id = $1
-            ORDER BY edited_at DESC
+            ORDER BY version_at DESC
             LIMIT 1
             """,
             event.message_id,
