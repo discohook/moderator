@@ -5,3 +5,17 @@ services:
     restart: always
     environment:
       DISCORD_TOKEN:
+      DATABASE_DSN: postgres://modbot:b4aqLMV6QAJtyG38vwE6cmhw@db:5432/modbot
+    depends_on:
+      - db
+  db:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_USER: modbot
+      POSTGRES_PASSWORD: b4aqLMV6QAJtyG38vwE6cmhw
+    volumes:
+      - data:/var/lib/postgresql/data
+    shm_size: 256M
+volumes:
+  data:

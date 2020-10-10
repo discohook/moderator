@@ -2,6 +2,7 @@ import re
 from os import environ
 
 import aiohttp
+import asyncpg
 import discord
 from discord.ext import commands
 from discord.utils import get
@@ -11,6 +12,7 @@ initial_extensions = (
     "bot.ext.errors",
     "bot.ext.meta",
     "bot.ext.help",
+    "bot.ext.logger",
     "bot.ext.filter",
     "bot.ext.roles",
     "bot.ext.support",
@@ -45,6 +47,7 @@ class Bot(commands.AutoShardedBot):
 
     async def start(self, *args, **kwargs):
         self.session = aiohttp.ClientSession()
+        self.db = await asyncpg.create_pool(environ.get("DATABASE_DSN"))
         await super().start(*args, **kwargs)
 
     async def close(self):
