@@ -84,6 +84,8 @@ class Logger(commands.Cog):
             icon_url=author.avatar_url,
         )
 
+        await ctx.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot or not message.guild:
