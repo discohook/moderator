@@ -39,7 +39,7 @@ class Logger(commands.Cog):
 
         await log_channel.send(embed=embed)
 
-    @commands.group(aliases=["hist"])
+    @commands.group(invoke_without_command=True, aliases=["hist"])
     @commands.has_guild_permissions(manage_messages=True)
     async def history(self, ctx: commands.Context):
         """Group of commands to browse message history"""
