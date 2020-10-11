@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 
 import discord
-from bot.utils import diff_message, escape
+from bot.utils import cut_words, diff_message, escape
 from discord.ext import commands
 from discord.utils import get
 
@@ -108,7 +108,7 @@ class Logger(commands.Cog):
         embed = discord.Embed(
             description=f"{author.mention} edited [`{event.message_id}`]({jump_url})"
             f" in <#{event.channel_id}>"
-            f"\n{diff_message(old_content, event.data['content'])}"
+            f"\n{diff_message(old_content, event.data['content'], max_len=250)}"
         )
         embed.set_author(
             name=str(author),
@@ -140,7 +140,7 @@ class Logger(commands.Cog):
         embed = discord.Embed(
             description=f"{author.mention} deleted `{event.message_id}`"
             f" in <#{event.channel_id}>"
-            f"\n{escape(stored_data['content'])}"
+            f"\n{cut_words(escape(stored_data['content']), max_len=250, end=' **... [cut off]**')}"
         )
         embed.set_author(
             name=str(author),
