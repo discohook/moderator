@@ -18,7 +18,7 @@ def wrap_in_code(value: str, *, block: Optional[Union[bool, str]] = None):
 
 
 def escape(text):
-    escape_markdown(re.sub(r"<(a?:\w+:\d+)>", "<\u200b\\1>", text))
+    return escape_markdown(re.sub(r"<(a?:\w+:\d+)>", "<\u200b\\1>", text))
 
 
 def diff_message(a: str, b: str):
