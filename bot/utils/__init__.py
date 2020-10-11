@@ -63,7 +63,7 @@ def diff_message(
         for op, i1, i2, j1, j2 in group:
             if min(i1, j1) == 0:
                 start = ""
-            if i2 == len(a) - 1 or j2 == len(b) - 1:
+            if i2 == len(a) or j2 == len(b):
                 end = ""
 
             if op == "delete" or op == "replace":
