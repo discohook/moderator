@@ -302,7 +302,7 @@ class Logger(commands.Cog):
             if not member:
                 continue
 
-            args.append((guild.id, after.id, str(after), after.nick))
+            args.append((guild.id, after.id, str(after), member.nick))
 
         await self.bot.db.executemany(
             """
