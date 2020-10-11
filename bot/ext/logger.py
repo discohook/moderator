@@ -70,6 +70,15 @@ class Logger(commands.Cog):
             version,
         )
 
+        if not content_data:
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Message history",
+                    description="Not found",
+                )
+            )
+            return
+
         channel = self.bot.get_channel(content_data["channel_id"])
         author = channel.guild.get_member(content_data["author_id"])
 
