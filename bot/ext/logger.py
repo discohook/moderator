@@ -80,15 +80,28 @@ class Logger(commands.Cog):
             event.data["edited_timestamp"], "%Y-%m-%dT%H:%M:%S.%f%z"
         ).replace(tzinfo=None)
 
-        await self.bot.db.execute(
-            """
-            INSERT INTO message_history (message_id, version_at, content)
-            VALUES ($1, $2, $3)
-            """,
-            event.message_id,
-            version_at,
-            event.data["content"],
-        )
+        async with self.bot.db.acquire() as conn:
+            async with conn.transaction():
+                await conn.execute(
+                    """
+                    INSERT INTO message_metadata (message_id, channel_id, guild_id, author_id)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT DO NOTHING
+                    """,
+                    event.message_id,
+                    event.channel_id,
+                    int(event.data["guild_id"]),
+                    int(event.data["user"]["id"]),
+                )
+                await self.bot.db.execute(
+                    """
+                    INSERT INTO message_history (message_id, version_at, content)
+                    VALUES ($1, $2, $3)
+                    """,
+                    event.message_id,
+                    version_at,
+                    event.data["content"],
+                )
 
         old_content = await self.bot.db.fetchval(
             """
