@@ -224,7 +224,7 @@ class Logger(commands.Cog):
         await self.bot.db.execute(
             """
             INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
-            VALUES ($1, $2, NOW(), $4, $5)
+            VALUES ($1, $2, NOW(), $3, $4)
             """,
             member.guild.id,
             member.id,
@@ -269,7 +269,7 @@ class Logger(commands.Cog):
         await self.bot.db.execute(
             """
             INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
-            VALUES ($1, $2, NOW(), $4, $5)
+            VALUES ($1, $2, NOW(), $3, $4)
             """,
             after.guild.id,
             after.id,
@@ -307,7 +307,7 @@ class Logger(commands.Cog):
         await self.bot.db.executemany(
             """
             INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
-            VALUES ($1, $2, NOW(), $4, $5)
+            VALUES ($1, $2, NOW(), $3, $4)
             """,
             args,
         )
