@@ -147,7 +147,7 @@ class Logger(commands.Cog):
                     event.message_id,
                     event.channel_id,
                     int(event.data["guild_id"]),
-                    int(event.data["user"]["id"]),
+                    int(event.data["author"]["id"]),
                 )
                 await self.bot.db.execute(
                     """
