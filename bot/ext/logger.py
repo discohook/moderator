@@ -280,8 +280,8 @@ class Logger(commands.Cog):
         embed = discord.Embed(
             description=f"**{after.mention} changed nickname**"
             f"\n{escape(before.nick) if before.nick else '*none*'}"
-            "\N{RIGHTWARDS ARROW}"
-            f"{escape(after.nick) if after.nick else '*none*'}"
+            " \N{RIGHTWARDS ARROW}"
+            f" {escape(after.nick) if after.nick else '*none*'}"
         )
         embed.set_author(
             name=f"{after} \N{BULLET} {after.id}",
