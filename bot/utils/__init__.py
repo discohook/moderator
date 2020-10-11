@@ -35,7 +35,7 @@ def cut_words(text: str, max_len: int, *, end: str = "..."):
 
         result += last_sep + word
 
-    return words
+    return result
 
 
 def diff_message(
