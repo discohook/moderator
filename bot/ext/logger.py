@@ -4,9 +4,9 @@ import re
 from datetime import datetime
 
 import discord
-from bot.utils import diff_message
+from bot.utils import diff_message, escape
 from discord.ext import commands
-from discord.utils import escape_markdown, get
+from discord.utils import get
 
 LogType = collections.namedtuple("LogType", "emoji channel")
 
@@ -140,7 +140,7 @@ class Logger(commands.Cog):
         embed = discord.Embed(
             description=f"{author.mention} deleted `{event.message_id}`"
             f" in <#{event.channel_id}>"
-            f"\n{escape_markdown(stored_data['content'])}"
+            f"\n{escape(stored_data['content'])}"
         )
         embed.set_author(
             name=str(author),
