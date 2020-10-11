@@ -38,4 +38,4 @@ def diff_message(a: str, b: str):
 
         groups.append(" ".join(parts))
 
-    return " [...] ".join(groups)
+    return " **...** ".join(groups)
