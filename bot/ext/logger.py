@@ -149,7 +149,7 @@ class Logger(commands.Cog):
                     int(event.data["guild_id"]),
                     int(event.data["author"]["id"]),
                 )
-                await self.bot.db.execute(
+                await conn.execute(
                     """
                     INSERT INTO message_history (message_id, version_at, content)
                     VALUES ($1, $2, $3)
@@ -218,6 +218,111 @@ class Logger(commands.Cog):
         )
 
         await get(channel.guild.channels, name="message-logs").send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        await self.bot.db.execute(
+            """
+            INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
+            VALUES ($1, $2, NOW(), $4, $5)
+            """,
+            member.guild.id,
+            member.id,
+            str(member),
+            member.nick,
+        )
+
+        embed = discord.Embed(description=f"**{member.mention} joined**")
+        embed.set_author(
+            name=f"{member} \N{BULLET} {member.id}",
+            url=f"https://discord.com/users/{member.id}",
+            icon_url=member.avatar_url,
+        )
+
+        await get(member.guild.channels, name="member-logs").send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        await self.bot.db.execute(
+            """
+            INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
+            VALUES ($1, $2, NOW(), NULL, NULL)
+            """,
+            member.guild.id,
+            member.id,
+        )
+
+        embed = discord.Embed(description=f"**{member.mention} left**")
+        embed.set_author(
+            name=f"{member} \N{BULLET} {member.id}",
+            url=f"https://discord.com/users/{member.id}",
+            icon_url=member.avatar_url,
+        )
+
+        await get(member.guild.channels, name="member-logs").send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before, after):
+        if before.nick == after.nick:
+            return
+
+        await self.bot.db.execute(
+            """
+            INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
+            VALUES ($1, $2, NOW(), $4, $5)
+            """,
+            after.guild.id,
+            after.id,
+            str(after),
+            after.nick,
+        )
+
+        embed = discord.Embed(
+            description=f"**{after.mention} changed nickname**"
+            f"\n{escape(before.nick) if before.nick else '*none*'}"
+            "\N{RIGHTWARDS ARROW}"
+            f"{escape(after.nick) if after.nick else '*none*'}"
+        )
+        embed.set_author(
+            name=f"{after} \N{BULLET} {after.id}",
+            url=f"https://discord.com/users/{after.id}",
+            icon_url=after.avatar_url,
+        )
+
+        await get(after.guild.channels, name="member-logs").send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_user_update(self, before, after):
+        if str(before) == str(after):
+            return
+
+        args = []
+        for guild in self.bot.guilds:
+            member = guild.get_member(after.id)
+            if not member:
+                continue
+
+            args.append((guild.id, after.id, str(after), after.nick))
+
+        await self.bot.db.executemany(
+            """
+            INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
+            VALUES ($1, $2, NOW(), $4, $5)
+            """,
+            args,
+        )
+
+        embed = discord.Embed(
+            description=f"**{after.mention} changed username**"
+            f"\n{escape(str(before))} \N{RIGHTWARDS ARROW} {escape(str(after))}"
+        )
+        embed.set_author(
+            name=f"{after} \N{BULLET} {after.id}",
+            url=f"https://discord.com/users/{after.id}",
+            icon_url=after.avatar_url,
+        )
+
+        await get(after.guild.channels, name="member-logs").send(embed=embed)
 
 
 def setup(bot: commands.Bot):
