@@ -47,7 +47,12 @@ class Logger(commands.Cog):
 
     @history.command(name="get")
     @commands.has_guild_permissions(manage_messages=True)
-    async def history_get(self, ctx: commands.Context, message_id: int, version=0):
+    async def history_get(
+        self,
+        ctx: commands.Context,
+        message_id: int,
+        version: int = 0,
+    ):
         """Gets a message by its ID and it's version
 
         Versions start at zero, each indexed edit adds one
