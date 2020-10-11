@@ -88,7 +88,7 @@ class Logger(commands.Cog):
             description=content_data["content"],
         )
         embed.set_author(
-            name=f"{author} \N{BULLET} ({author.id})",
+            name=f"{author} \N{BULLET} {author.id}",
             url=f"https://discord.com/users/{author.id}",
             icon_url=author.avatar_url,
         )
@@ -180,7 +180,7 @@ class Logger(commands.Cog):
             f"\n{diff_message(old_content, event.data['content'], max_len=250)}"
         )
         embed.set_author(
-            name=f"{author} \N{BULLET} ({author.id})",
+            name=f"{author} \N{BULLET} {author.id}",
             url=f"https://discord.com/users/{author.id}",
             icon_url=author.avatar_url,
         )
@@ -212,7 +212,7 @@ class Logger(commands.Cog):
             f"\n{cut_words(escape(stored_data['content']), max_len=250, end=' **... [cut off]**')}"
         )
         embed.set_author(
-            name=f"{author} \N{BULLET} ({author.id})",
+            name=f"{author} \N{BULLET} {author.id}",
             url=f"https://discord.com/users/{author.id}",
             icon_url=author.avatar_url,
         )
