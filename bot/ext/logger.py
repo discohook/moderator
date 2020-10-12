@@ -224,10 +224,11 @@ class Logger(commands.Cog):
         await self.bot.db.execute(
             """
             INSERT INTO member_history (guild_id, member_id, version_at, tag, nick)
-            VALUES ($1, $2, NOW(), $3, $4)
+            VALUES ($1, $2, $3, $4, $5)
             """,
             member.guild.id,
             member.id,
+            member.joined_at,
             str(member),
             member.nick,
         )
