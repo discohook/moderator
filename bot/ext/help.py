@@ -7,7 +7,6 @@ from discord.ext import commands
 
 class HelpCommand(commands.HelpCommand):
     def __init__(self, **options):
-        options.setdefault("verify_checks", False)
         options.setdefault("command_attrs", {}).setdefault(
             "help", "Shows help on how to use the bot and its commands"
         )
