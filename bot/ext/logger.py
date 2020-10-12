@@ -312,18 +312,6 @@ class Logger(commands.Cog):
             args,
         )
 
-        embed = discord.Embed(
-            description=f"**{after.mention} changed username**"
-            f"\n{escape(str(before))} \N{RIGHTWARDS ARROW} {escape(str(after))}"
-        )
-        embed.set_author(
-            name=f"{after} \N{BULLET} {after.id}",
-            url=f"https://discord.com/users/{after.id}",
-            icon_url=after.avatar_url,
-        )
-
-        await get(after.guild.channels, name="member-logs").send(embed=embed)
-
 
 def setup(bot: commands.Bot):
     bot.add_cog(Logger(bot))
