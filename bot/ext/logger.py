@@ -393,12 +393,12 @@ class Logger(commands.Cog):
                 member.guild.id,
                 log.target.id,
                 log.user.id,
-                "ban",
+                "unban",
                 log.reason,
             )
 
             embed = discord.Embed(
-                description=f"**{member.mention} got banned by {log.user.mention}**"
+                description=f"**{member.mention} got unbanned by {log.user.mention}**"
                 f"\n**Reason:** {log.reason}"
             )
             embed.set_author(
