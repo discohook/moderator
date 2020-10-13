@@ -1,7 +1,7 @@
 import collections
 import difflib
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import discord
 from bot.utils import cut_words, diff_message, escape
@@ -253,6 +253,37 @@ class Logger(commands.Cog):
             member.id,
         )
 
+        async for log in member.guild.audit_logs(action=discord.AuditLogAction.kick):
+            if log.created_at < datetime.utcnow() - timedelta(seconds=30):
+                break
+            if log.target.id != member.id:
+                continue
+
+            await self.bot.db.execute(
+                """
+                INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
+                VALUES ($1, $2, $3, $4, NOW(), $5)
+                """,
+                member.guild.id,
+                log.target.id,
+                log.user.id,
+                "kick",
+                log.reason,
+            )
+
+            embed = discord.Embed(
+                description=f"**{member.mention} got kicked by {log.user.mention}**"
+                f"\n**Reason:** {log.reason}"
+            )
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
+
+            await get(member.guild.channels, name="moderator-logs").send(embed=embed)
+            break
+
         embed = discord.Embed(description=f"**{member.mention} left**")
         embed.set_author(
             name=f"{member} \N{BULLET} {member.id}",
@@ -312,6 +343,72 @@ class Logger(commands.Cog):
             """,
             args,
         )
+
+    @comamnds.Cog.listener()
+    async def on_member_ban(self, guild, member):
+        async for log in member.guild.audit_logs(action=discord.AuditLogAction.ban):
+            if log.created_at < datetime.utcnow() - timedelta(seconds=30):
+                break
+            if log.target.id != member.id:
+                continue
+
+            await self.bot.db.execute(
+                """
+                INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
+                VALUES ($1, $2, $3, $4, NOW(), $5)
+                """,
+                member.guild.id,
+                log.target.id,
+                log.user.id,
+                "ban",
+                log.reason,
+            )
+
+            embed = discord.Embed(
+                description=f"**{member.mention} got banned by {log.user.mention}**"
+                f"\n**Reason:** {log.reason}"
+            )
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
+
+            await get(member.guild.channels, name="moderator-logs").send(embed=embed)
+            break
+
+    @commands.Cog.listener()
+    async def on_member_unban(self, guild, member):
+        async for log in member.guild.audit_logs(action=discord.AuditLogAction.unban):
+            if log.created_at < datetime.utcnow() - timedelta(seconds=30):
+                break
+            if log.target.id != member.id:
+                continue
+
+            await self.bot.db.execute(
+                """
+                INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
+                VALUES ($1, $2, $3, $4, NOW(), $5)
+                """,
+                member.guild.id,
+                log.target.id,
+                log.user.id,
+                "ban",
+                log.reason,
+            )
+
+            embed = discord.Embed(
+                description=f"**{member.mention} got banned by {log.user.mention}**"
+                f"\n**Reason:** {log.reason}"
+            )
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
+
+            await get(member.guild.channels, name="moderator-logs").send(embed=embed)
+            break
 
 
 def setup(bot: commands.Bot):
