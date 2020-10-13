@@ -344,7 +344,7 @@ class Logger(commands.Cog):
             args,
         )
 
-    @comamnds.Cog.listener()
+    @commands.Cog.listener()
     async def on_member_ban(self, guild, member):
         async for log in member.guild.audit_logs(action=discord.AuditLogAction.ban):
             if log.created_at < datetime.utcnow() - timedelta(seconds=30):
