@@ -345,11 +345,11 @@ class Logger(commands.Cog):
         )
 
     @commands.Cog.listener()
-    async def on_member_ban(self, guild, member):
-        async for log in member.guild.audit_logs(action=discord.AuditLogAction.ban):
+    async def on_member_ban(self, guild, user):
+        async for log in guild.audit_logs(action=discord.AuditLogAction.ban):
             if log.created_at < datetime.utcnow() - timedelta(seconds=30):
                 break
-            if log.target.id != member.id:
+            if log.target.id != user.id:
                 continue
 
             await self.bot.db.execute(
@@ -357,7 +357,7 @@ class Logger(commands.Cog):
                 INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
                 VALUES ($1, $2, $3, $4, NOW(), $5)
                 """,
-                member.guild.id,
+                guild.id,
                 log.target.id,
                 log.user.id,
                 "ban",
@@ -365,24 +365,24 @@ class Logger(commands.Cog):
             )
 
             embed = discord.Embed(
-                description=f"**{member.mention} got banned by {log.user.mention}**"
+                description=f"**{user.mention} got banned by {log.user.mention}**"
                 f"\n**Reason:** {log.reason}"
             )
             embed.set_author(
-                name=f"{member} \N{BULLET} {member.id}",
-                url=f"https://discord.com/users/{member.id}",
-                icon_url=member.avatar_url,
+                name=f"{user} \N{BULLET} {user.id}",
+                url=f"https://discord.com/users/{user.id}",
+                icon_url=user.avatar_url,
             )
 
-            await get(member.guild.channels, name="moderator-logs").send(embed=embed)
+            await get(guild.channels, name="moderator-logs").send(embed=embed)
             break
 
     @commands.Cog.listener()
-    async def on_member_unban(self, guild, member):
-        async for log in member.guild.audit_logs(action=discord.AuditLogAction.unban):
+    async def on_member_unban(self, guild, user):
+        async for log in guild.audit_logs(action=discord.AuditLogAction.unban):
             if log.created_at < datetime.utcnow() - timedelta(seconds=30):
                 break
-            if log.target.id != member.id:
+            if log.target.id != user.id:
                 continue
 
             await self.bot.db.execute(
@@ -390,7 +390,7 @@ class Logger(commands.Cog):
                 INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
                 VALUES ($1, $2, $3, $4, NOW(), $5)
                 """,
-                member.guild.id,
+                guild.id,
                 log.target.id,
                 log.user.id,
                 "unban",
@@ -398,16 +398,16 @@ class Logger(commands.Cog):
             )
 
             embed = discord.Embed(
-                description=f"**{member.mention} got unbanned by {log.user.mention}**"
+                description=f"**{user.mention} got unbanned by {log.user.mention}**"
                 f"\n**Reason:** {log.reason}"
             )
             embed.set_author(
-                name=f"{member} \N{BULLET} {member.id}",
-                url=f"https://discord.com/users/{member.id}",
-                icon_url=member.avatar_url,
+                name=f"{user} \N{BULLET} {user.id}",
+                url=f"https://discord.com/users/{user.id}",
+                icon_url=user.avatar_url,
             )
 
-            await get(member.guild.channels, name="moderator-logs").send(embed=embed)
+            await get(guild.channels, name="moderator-logs").send(embed=embed)
             break
 
 
