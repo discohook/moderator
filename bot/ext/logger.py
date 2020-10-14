@@ -58,6 +58,8 @@ class Logger(commands.Cog):
 
         channel = self.bot.get_channel(content_data["channel_id"])
         author = channel.guild.get_member(content_data["author_id"])
+        if not author:
+            author = await self.bot.fetch_user(content_data["author_id"])
 
         embed = discord.Embed(
             title=f"Message {message_id}",
@@ -133,6 +135,8 @@ class Logger(commands.Cog):
 
         channel = self.bot.get_channel(old_data["channel_id"])
         author = channel.guild.get_member(old_data["author_id"])
+        if not author:
+            author = await self.bot.fetch_user(old_data["author_id"])
 
         embed = discord.Embed(
             title=f"Message {message_id}",
@@ -224,6 +228,8 @@ class Logger(commands.Cog):
 
         channel = self.bot.get_channel(event.channel_id)
         author = channel.guild.get_member(int(event.data["author"]["id"]))
+        if not author:
+            author = await self.bot.fetch_user(int(event.data["author"]["id"]))
 
         jump_url = f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{event.message_id}"
         embed = discord.Embed(
@@ -257,6 +263,8 @@ class Logger(commands.Cog):
 
         channel = self.bot.get_channel(event.channel_id)
         author = channel.guild.get_member(stored_data["author_id"])
+        if not author:
+            author = await self.bot.fetch_user(stored_data["author_id"])
 
         embed = discord.Embed(
             description=f"{author.mention} deleted `{event.message_id}`"
