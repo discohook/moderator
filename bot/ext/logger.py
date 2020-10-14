@@ -8,13 +8,6 @@ from bot.utils import cut_words, diff_message, escape
 from discord.ext import commands
 from discord.utils import get
 
-LogType = collections.namedtuple("LogType", "emoji channel")
-
-log_types = {
-    "member_join": LogType("\N{RIGHTWARDS BLACK ARROW}", "member-logs"),
-    "member_leave": LogType("\N{LEFTWARDS BLACK ARROW}", "member-logs"),
-}
-
 
 class Logger(commands.Cog):
     """Magic logging module"""
@@ -22,22 +15,6 @@ class Logger(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         super().__init__()
-
-    async def write_log(
-        self,
-        ctx: commands.Context,
-        log_type: LogType,
-        text: str,
-        *,
-        fields,
-    ):
-        log_channel = get(ctx.guild.channels, name=log_type.channel)
-
-        embed = discord.Embed(description=f"{log_type.emoji} \u200b \u200b {text}")
-        for field in fields:
-            embed.add_field(**field)
-
-        await log_channel.send(embed=embed)
 
     @commands.group(invoke_without_command=True, aliases=["hist"])
     @commands.has_guild_permissions(manage_messages=True)
@@ -55,7 +32,7 @@ class Logger(commands.Cog):
     ):
         """Gets a message by its ID and it's version
 
-        Versions start at zero, each indexed edit adds one
+        Versions start at zero, each indexed edit adds one.
         """
 
         content_data = await self.bot.db.fetchrow(
@@ -86,6 +63,81 @@ class Logger(commands.Cog):
             title=f"Message {message_id}",
             url=f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{message_id}",
             description=content_data["content"],
+        )
+        embed.set_author(
+            name=f"{author} \N{BULLET} {author.id}",
+            url=f"https://discord.com/users/{author.id}",
+            icon_url=author.avatar_url,
+        )
+
+        await ctx.send(embed=embed)
+
+    @history.command(name="difference", aliases=["diff"])
+    @commands.has_guild_permissions(manage_messages=True)
+    async def history_difference(
+        self,
+        ctx: commands.Context,
+        message_id: int,
+        old_version: int = 0,
+        new_version: int = -1,
+    ):
+        """Gets the difference between 2 message versions for a message by its ID and 2 versions
+
+        Versions start at zero, each indexed edit adds one.
+        The new version parameter accepts magic value -1 as last message, other negative numbers are not supported.
+        """
+
+        old_data = await self.bot.db.fetchrow(
+            """
+            SELECT message_history.content, message_metadata.* FROM message_history
+            JOIN message_metadata ON (message_metadata.message_id = message_history.message_id)
+            WHERE message_history.message_id = $1
+            ORDER BY version_at
+            LIMIT 1 OFFSET $2
+            """,
+            message_id,
+            old_version,
+        )
+
+        new_content = ""
+        if new_version == -1:
+            new_content = await self.bot.db.fetchval(
+                """
+                SELECT content FROM message_history
+                WHERE message_id = $1
+                ORDER BY version_at DESC
+                LIMIT 1
+                """,
+                message_id,
+            )
+        else:
+            new_content = await self.bot.db.fetchval(
+                """
+                SELECT content FROM message_history
+                WHERE message_id = $1
+                ORDER BY version_at
+                LIMIT 1 OFFSET $2
+                """,
+                message_id,
+                new_version,
+            )
+
+        if not old_data or not new_content:
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Message history",
+                    description="Not found",
+                )
+            )
+            return
+
+        channel = self.bot.get_channel(old_data["channel_id"])
+        author = channel.guild.get_member(old_data["author_id"])
+
+        embed = discord.Embed(
+            title=f"Message {message_id}",
+            url=f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{message_id}",
+            description=diff_message(old_data["content"], new_content),
         )
         embed.set_author(
             name=f"{author} \N{BULLET} {author.id}",
