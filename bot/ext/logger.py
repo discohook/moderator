@@ -182,10 +182,24 @@ class Logger(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_edit(self, event: discord.RawMessageUpdateEvent):
         if (
-            "content" not in event.data
-            or "guild_id" not in event.data
-            or "webhook_id" in event.data
+            event.data.get("webhook_id", None)
+            or not event.data.get("content", None)
+            or not event.data.get("guild_id", None)
+            or not event.data.get("edited_timestamp", None)
         ):
+            return
+
+        old_content = await self.bot.db.fetchval(
+            """
+            SELECT content FROM message_history
+            WHERE message_id = $1
+            ORDER BY version_at DESC
+            LIMIT 1
+            """,
+            event.message_id,
+        )
+
+        if old_content == event.data["content"]:
             return
 
         version_at = datetime.strptime(
@@ -214,17 +228,6 @@ class Logger(commands.Cog):
                     version_at,
                     event.data["content"],
                 )
-
-        old_content = await self.bot.db.fetchval(
-            """
-            SELECT content FROM message_history
-            WHERE message_id = $1 AND version_at < $2
-            ORDER BY version_at DESC
-            LIMIT 1
-            """,
-            event.message_id,
-            version_at,
-        )
 
         channel = self.bot.get_channel(event.channel_id)
         author = channel.guild.get_member(int(event.data["author"]["id"]))
