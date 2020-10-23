@@ -292,6 +292,16 @@ class Moderation(commands.Cog):
                 role = get(guild.roles, name="Silenced")
                 member.remove_roles(role, reason="Automatically unsilenced")
 
+            await self.bot.db.execute(
+                """
+                INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
+                VALUES ($1, $2, $3, 'unsilence', NOW(), 'Automatically unsilenced')
+                """,
+                guild.id,
+                member.id,
+                self.bot.user.id,
+            )
+
             embed = discord.Embed(
                 description=f"**{member.mention} got automatically unsilenced after {duration}**"
             )
