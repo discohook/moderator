@@ -13,8 +13,8 @@ class Moderation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.auto_unsilence.start()
         super().__init__()
-        self.auto_unsilence_loop.start()
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
@@ -257,7 +257,7 @@ class Moderation(commands.Cog):
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @tasks.loop(minutes=1)
-    async def auto_unsilence_loop(self):
+    async def auto_unsilence(self):
         queue = await self.bot.db.fetch(
             """
             SELECT guild_id, target_id, duration FROM moderator_action
