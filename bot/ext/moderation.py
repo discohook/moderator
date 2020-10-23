@@ -17,7 +17,7 @@ class Moderation(commands.Cog):
         super().__init__()
 
     @commands.command()
-    @commands.has_permissions(ban_members=True)
+    @commands.has_guild_permissions(ban_members=True)
     async def ban(
         self,
         ctx: commands.Context,
@@ -41,7 +41,7 @@ class Moderation(commands.Cog):
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @commands.command()
-    @commands.has_permissions(ban_members=True)
+    @commands.has_guild_permissions(ban_members=True)
     async def unban(
         self,
         ctx: commands.Context,
@@ -63,7 +63,7 @@ class Moderation(commands.Cog):
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @commands.command()
-    @commands.has_permissions(kick_members=True)
+    @commands.has_guild_permissions(kick_members=True)
     async def kick(
         self,
         ctx: commands.Context,
@@ -85,7 +85,7 @@ class Moderation(commands.Cog):
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @commands.command(aliases=["mute"])
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     async def silence(
         self,
         ctx: commands.Context,
@@ -147,7 +147,7 @@ class Moderation(commands.Cog):
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @commands.command(aliases=["unmute"])
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     async def unsilence(
         self,
         ctx: commands.Context,
@@ -207,7 +207,7 @@ class Moderation(commands.Cog):
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
     @commands.command()
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_guild_permissions(manage_messages=True)
     async def warn(
         self,
         ctx: commands.Context,
