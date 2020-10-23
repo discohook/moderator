@@ -313,6 +313,10 @@ class Moderation(commands.Cog):
 
             await get(guild.channels, name="moderator-logs").send(embed=embed)
 
+    @auto_unsilence.before_loop
+    async def auto_unsilence(self):
+        await self.bot.wait_until_ready()
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(Moderation(bot))
