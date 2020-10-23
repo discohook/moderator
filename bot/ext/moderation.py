@@ -276,7 +276,7 @@ class Moderation(commands.Cog):
 
         for row in queue:
             guild = self.bot.get_guild(row["guild_id"])
-            member = guild.members.get(row["target_id"]) or self.bot.fetch_user(
+            member = guild.get_member(row["target_id"]) or self.bot.fetch_user(
                 row["target_id"]
             )
             duration = timedelta(seconds=row["duration"])
