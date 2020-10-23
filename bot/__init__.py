@@ -13,6 +13,7 @@ initial_extensions = (
     "bot.ext.meta",
     "bot.ext.help",
     "bot.ext.logger",
+    "bot.ext.moderation",
     "bot.ext.filter",
     "bot.ext.roles",
     "bot.ext.support",
