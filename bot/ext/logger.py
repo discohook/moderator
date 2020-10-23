@@ -317,7 +317,7 @@ class Logger(commands.Cog):
         )
 
         async for log in member.guild.audit_logs(action=discord.AuditLogAction.kick):
-            if log.created_at < datetime.utcnow() - timedelta(seconds=30):
+            if log.created_at < member.joined_at:
                 break
             if log.target.id != member.id:
                 continue
@@ -409,8 +409,14 @@ class Logger(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
+        max_created_at = (
+            user.joined_at
+            if isinstance(user, discord.Member)
+            else datetime.utcnow() - timedelta(minutes=5)
+        )
+
         async for log in guild.audit_logs(action=discord.AuditLogAction.ban):
-            if log.created_at < datetime.utcnow() - timedelta(seconds=30):
+            if log.created_at < max_created_at:
                 break
             if log.target.id != user.id:
                 continue
@@ -443,7 +449,7 @@ class Logger(commands.Cog):
     @commands.Cog.listener()
     async def on_member_unban(self, guild, user):
         async for log in guild.audit_logs(action=discord.AuditLogAction.unban):
-            if log.created_at < datetime.utcnow() - timedelta(seconds=30):
+            if log.created_at < datetime.utcnow() - timedelta(minutes=5):
                 break
             if log.target.id != user.id:
                 continue
