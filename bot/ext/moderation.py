@@ -125,7 +125,7 @@ class Moderation(commands.Cog):
 
         for member in members:
             try:
-                member.send(
+                await member.send(
                     f"**You were silenced in {ctx.guild} by {ctx.author.mention} for {duration}**"
                     f"\n**Reason:** {reason}"
                 )
@@ -185,7 +185,7 @@ class Moderation(commands.Cog):
 
         for member in members:
             try:
-                member.send(
+                await member.send(
                     f"**You were unsilenced in {ctx.guild} by {ctx.author.mention}**"
                     f"\n**Reason:** {reason}"
                 )
@@ -235,7 +235,7 @@ class Moderation(commands.Cog):
 
         for member in members:
             try:
-                member.send(
+                await member.send(
                     f"**You were warned in {ctx.guild} by {ctx.author.mention}**"
                     f"\n**Reason:** {reason}"
                 )
@@ -282,7 +282,7 @@ class Moderation(commands.Cog):
             duration = timedelta(seconds=row["duration"])
 
             try:
-                member.send(
+                await member.send(
                     f"**You were automatically unsilenced after {duration} in {guild}**"
                 )
             except discord.HTTPException:
