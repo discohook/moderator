@@ -14,7 +14,7 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         super().__init__()
-        self.unsilence_loop.start()
+        self.auto_unsilence_loop.start()
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
