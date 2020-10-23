@@ -6,7 +6,7 @@ from discord.ext import commands
 
 class TimeDurationConverter(commands.Converter):
     async def convert(self, ctx, argument):
-        match = re.match(r"^(?:(\d+)d)(?:(\d+)h)(?:(\d+)m)(?:(\d+)s)$", argument)
+        match = re.match(r"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$", argument)
 
         if match is None or not match.group(0):
             raise commands.BadArgument("Invalid duration given")
