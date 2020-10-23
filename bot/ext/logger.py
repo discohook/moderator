@@ -322,6 +322,15 @@ class Logger(commands.Cog):
             if log.target.id != member.id:
                 continue
 
+            moderator = log.user
+            reason = log.reason
+
+            if member.id == self.bot.user.id:
+                match = re.match("^[(\d+)]: (.+)$")
+                if match:
+                    moderator = member.get_member(int(match.group(1)))
+                    reason = match.group(2)
+
             await self.bot.db.execute(
                 """
                 INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
@@ -329,14 +338,14 @@ class Logger(commands.Cog):
                 """,
                 member.guild.id,
                 log.target.id,
-                log.user.id,
+                moderator.id,
                 "kick",
-                log.reason,
+                reason,
             )
 
             embed = discord.Embed(
-                description=f"**{member.mention} got kicked by {log.user.mention}**"
-                f"\n**Reason:** {log.reason}"
+                description=f"**{member.mention} got kicked by {moderator.mention}**"
+                f"\n**Reason:** {reason}"
             )
             embed.set_author(
                 name=f"{member} \N{BULLET} {member.id}",
@@ -421,6 +430,15 @@ class Logger(commands.Cog):
             if log.target.id != user.id:
                 continue
 
+            moderator = log.user
+            reason = log.reason
+
+            if user.id == self.bot.user.id:
+                match = re.match("^[(\d+)]: (.+)$")
+                if match:
+                    moderator = guild.get_member(int(match.group(1)))
+                    reason = match.group(2)
+
             await self.bot.db.execute(
                 """
                 INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
@@ -428,14 +446,14 @@ class Logger(commands.Cog):
                 """,
                 guild.id,
                 log.target.id,
-                log.user.id,
+                moderator.id,
                 "ban",
-                log.reason,
+                reason,
             )
 
             embed = discord.Embed(
-                description=f"**{user.mention} got banned by {log.user.mention}**"
-                f"\n**Reason:** {log.reason}"
+                description=f"**{user.mention} got banned by {moderator.mention}**"
+                f"\n**Reason:** {reason}"
             )
             embed.set_author(
                 name=f"{user} \N{BULLET} {user.id}",
@@ -454,6 +472,15 @@ class Logger(commands.Cog):
             if log.target.id != user.id:
                 continue
 
+            moderator = log.user
+            reason = log.reason
+
+            if user.id == self.bot.user.id:
+                match = re.match("^[(\d+)]: (.+)$")
+                if match:
+                    moderator = guild.get_member(int(match.group(1)))
+                    reason = match.group(2)
+
             await self.bot.db.execute(
                 """
                 INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
@@ -461,14 +488,14 @@ class Logger(commands.Cog):
                 """,
                 guild.id,
                 log.target.id,
-                log.user.id,
+                moderator.id,
                 "unban",
                 log.reason,
             )
 
             embed = discord.Embed(
-                description=f"**{user.mention} got unbanned by {log.user.mention}**"
-                f"\n**Reason:** {log.reason}"
+                description=f"**{user.mention} got unbanned by {moderator.mention}**"
+                f"\n**Reason:** {reason}"
             )
             embed.set_author(
                 name=f"{user} \N{BULLET} {user.id}",
