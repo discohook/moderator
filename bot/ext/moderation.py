@@ -314,7 +314,7 @@ class Moderation(commands.Cog):
             await get(guild.channels, name="moderator-logs").send(embed=embed)
 
     @auto_unsilence.before_loop
-    async def auto_unsilence(self):
+    async def before_auto_unsilence(self):
         await self.bot.wait_until_ready()
 
 
