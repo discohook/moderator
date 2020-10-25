@@ -7,8 +7,12 @@ import discord
 from discord.ext import commands
 from discord.utils import get
 
+from bot.ext import config
+from bot.utils import wrap_in_code
+
 initial_extensions = (
     "jishaku",
+    "bot.ext.config",
     "bot.ext.errors",
     "bot.ext.meta",
     "bot.ext.help",
@@ -24,10 +28,10 @@ class Bot(commands.AutoShardedBot):
     def __init__(self):
         super().__init__(
             command_prefix=self.get_prefix_list,
-            description="Discohook's private moderation bot.",
+            description="Cool moderation bot.",
             help_command=None,
             activity=discord.Activity(
-                type=discord.ActivityType.watching, name="the server | m.help"
+                type=discord.ActivityType.watching, name="the server | @me help"
             ),
             allowed_mentions=discord.AllowedMentions.none(),
             intents=discord.Intents.all(),
@@ -38,13 +42,24 @@ class Bot(commands.AutoShardedBot):
         for extension in initial_extensions:
             self.load_extension(extension)
 
-    def get_prefix_list(self, bot, message):
-        return (
+    async def get_prefix_list(self, bot, message):
+        custom_prefix = await self.get_cog("Config").get_value(
+            message.guild,
+            get(config.configurables, name="prefix"),
+        )
+
+        prefixes = [
             f"<@!{bot.user.id}> ",
             f"<@{bot.user.id}> ",
-            "m. ",
-            "m.",
-        )
+        ]
+
+        if custom_prefix:
+            prefixes[len(prefixes) :] = [
+                custom_prefix + " ",
+                custom_prefix,
+            ]
+
+        return prefixes
 
     async def start(self, *args, **kwargs):
         self.session = aiohttp.ClientSession()
@@ -62,9 +77,23 @@ class Bot(commands.AutoShardedBot):
         if message.author.bot:
             return
 
+        if message.guild:
+            await self.get_cog("Config").get_value(
+                message.guild, get(config.configurables, name="prefix")
+            )
+
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
+            prefix = await self.get_cog("Config").get_value(
+                message.guild,
+                get(config.configurables, name="prefix"),
+            )
+            prefix_md = wrap_in_code(prefix) if prefix else self.user.mention
+
             await message.channel.send(
-                embed=discord.Embed(title="Prefix", description="My prefix is `m.`")
+                embed=discord.Embed(
+                    title="Prefix",
+                    description=f"My prefix is {prefix_md}.",
+                )
             )
 
         await self.process_commands(message)

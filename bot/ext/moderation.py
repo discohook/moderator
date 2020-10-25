@@ -132,17 +132,21 @@ class Moderation(commands.Cog):
             except discord.HTTPException:
                 pass
 
-            embed = discord.Embed(
-                description=f"**{member.mention} got silenced by {ctx.author.mention} for {duration}**"
-                f"\n**Reason:** {reason}"
+            log_channel = await self.bot.get_cog("Logger").get_log_channel(
+                ctx.guild, "moderator"
             )
-            embed.set_author(
-                name=f"{member} \N{BULLET} {member.id}",
-                url=f"https://discord.com/users/{member.id}",
-                icon_url=member.avatar_url,
-            )
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{member.mention} got silenced by {ctx.author.mention} for {duration}**"
+                    f"\n**Reason:** {reason}"
+                )
+                embed.set_author(
+                    name=f"{member} \N{BULLET} {member.id}",
+                    url=f"https://discord.com/users/{member.id}",
+                    icon_url=member.avatar_url,
+                )
 
-            await get(ctx.guild.channels, name="moderator-logs").send(embed=embed)
+                await log_channel.send(embed=embed)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -192,17 +196,21 @@ class Moderation(commands.Cog):
             except discord.HTTPException:
                 pass
 
-            embed = discord.Embed(
-                description=f"**{member.mention} got unsilenced by {ctx.author.mention}**"
-                f"\n**Reason:** {reason}"
+            log_channel = await self.bot.get_cog("Logger").get_log_channel(
+                ctx.guild, "moderator"
             )
-            embed.set_author(
-                name=f"{member} \N{BULLET} {member.id}",
-                url=f"https://discord.com/users/{member.id}",
-                icon_url=member.avatar_url,
-            )
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{member.mention} got unsilenced by {ctx.author.mention}**"
+                    f"\n**Reason:** {reason}"
+                )
+                embed.set_author(
+                    name=f"{member} \N{BULLET} {member.id}",
+                    url=f"https://discord.com/users/{member.id}",
+                    icon_url=member.avatar_url,
+                )
 
-            await get(ctx.guild.channels, name="moderator-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -242,17 +250,21 @@ class Moderation(commands.Cog):
             except discord.HTTPException:
                 pass
 
-            embed = discord.Embed(
-                description=f"**{member.mention} got warned by {ctx.author.mention}**"
-                f"\n**Reason:** {reason}"
+            log_channel = await self.bot.get_cog("Logger").get_log_channel(
+                ctx.guild, "moderator"
             )
-            embed.set_author(
-                name=f"{member} \N{BULLET} {member.id}",
-                url=f"https://discord.com/users/{member.id}",
-                icon_url=member.avatar_url,
-            )
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{member.mention} got warned by {ctx.author.mention}**"
+                    f"\n**Reason:** {reason}"
+                )
+                embed.set_author(
+                    name=f"{member} \N{BULLET} {member.id}",
+                    url=f"https://discord.com/users/{member.id}",
+                    icon_url=member.avatar_url,
+                )
 
-            await get(ctx.guild.channels, name="moderator-logs").send(embed=embed)
+                await log_channel.send(embed=embed)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -276,6 +288,9 @@ class Moderation(commands.Cog):
 
         for row in queue:
             guild = self.bot.get_guild(row["guild_id"])
+            if not guild:
+                continue
+
             member = guild.get_member(row["target_id"]) or self.bot.fetch_user(
                 row["target_id"]
             )
@@ -302,16 +317,20 @@ class Moderation(commands.Cog):
                 self.bot.user.id,
             )
 
-            embed = discord.Embed(
-                description=f"**{member.mention} got automatically unsilenced after {duration}**"
+            log_channel = await self.bot.get_cog("Logger").get_log_channel(
+                guild, "moderator"
             )
-            embed.set_author(
-                name=f"{member} \N{BULLET} {member.id}",
-                url=f"https://discord.com/users/{member.id}",
-                icon_url=member.avatar_url,
-            )
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{member.mention} got automatically unsilenced after {duration}**"
+                )
+                embed.set_author(
+                    name=f"{member} \N{BULLET} {member.id}",
+                    url=f"https://discord.com/users/{member.id}",
+                    icon_url=member.avatar_url,
+                )
 
-            await get(guild.channels, name="moderator-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
     @auto_unsilence.before_loop
     async def before_auto_unsilence(self):

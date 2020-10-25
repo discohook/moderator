@@ -4,6 +4,7 @@ import re
 from datetime import datetime, timedelta
 
 import discord
+from bot.ext import config
 from bot.utils import cut_words, diff_message, escape
 from discord.ext import commands
 from discord.utils import get
@@ -15,6 +16,12 @@ class Logger(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         super().__init__()
+
+    async def get_log_channel(self, guild: discord.Guild, log_type: str):
+        cfg = self.bot.get_cog("Config")
+        configurable = get(config.configurables, name=f"{log_type}-logs")
+        channel_id = await cfg.get_value(guild, configurable)
+        return get(guild.channels, id=channel_id)
 
     @commands.group(invoke_without_command=True, aliases=["hist"])
     @commands.has_guild_permissions(manage_messages=True)
@@ -230,23 +237,25 @@ class Logger(commands.Cog):
                 )
 
         channel = self.bot.get_channel(event.channel_id)
-        author = channel.guild.get_member(int(event.data["author"]["id"]))
-        if not author:
-            author = await self.bot.fetch_user(int(event.data["author"]["id"]))
+        log_channel = await self.get_log_channel(channel.guild, "message")
+        if log_channel:
+            author = channel.guild.get_member(int(event.data["author"]["id"]))
+            if not author:
+                author = await self.bot.fetch_user(int(event.data["author"]["id"]))
 
-        jump_url = f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{event.message_id}"
-        embed = discord.Embed(
-            description=f"{author.mention} edited [`{event.message_id}`]({jump_url})"
-            f" in <#{event.channel_id}>"
-            f"\n{diff_message(old_content, event.data['content'], max_len=250)}"
-        )
-        embed.set_author(
-            name=f"{author} \N{BULLET} {author.id}",
-            url=f"https://discord.com/users/{author.id}",
-            icon_url=author.avatar_url,
-        )
+            jump_url = f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{event.message_id}"
+            embed = discord.Embed(
+                description=f"{author.mention} edited [`{event.message_id}`]({jump_url})"
+                f" in <#{event.channel_id}>"
+                f"\n{diff_message(old_content, event.data['content'], max_len=250)}"
+            )
+            embed.set_author(
+                name=f"{author} \N{BULLET} {author.id}",
+                url=f"https://discord.com/users/{author.id}",
+                icon_url=author.avatar_url,
+            )
 
-        await get(channel.guild.channels, name="message-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, event: discord.RawMessageDeleteEvent):
@@ -265,22 +274,24 @@ class Logger(commands.Cog):
             return
 
         channel = self.bot.get_channel(event.channel_id)
-        author = channel.guild.get_member(stored_data["author_id"])
-        if not author:
-            author = await self.bot.fetch_user(stored_data["author_id"])
+        log_channel = await self.get_log_channel(channel.guild, "message")
+        if log_channel:
+            author = channel.guild.get_member(stored_data["author_id"])
+            if not author:
+                author = await self.bot.fetch_user(stored_data["author_id"])
 
-        embed = discord.Embed(
-            description=f"{author.mention} deleted `{event.message_id}`"
-            f" in <#{event.channel_id}>"
-            f"\n{cut_words(escape(stored_data['content']), max_len=250, end=' **... [cut off]**')}"
-        )
-        embed.set_author(
-            name=f"{author} \N{BULLET} {author.id}",
-            url=f"https://discord.com/users/{author.id}",
-            icon_url=author.avatar_url,
-        )
+            embed = discord.Embed(
+                description=f"{author.mention} deleted `{event.message_id}`"
+                f" in <#{event.channel_id}>"
+                f"\n{cut_words(escape(stored_data['content']), max_len=250, end=' **... [cut off]**')}"
+            )
+            embed.set_author(
+                name=f"{author} \N{BULLET} {author.id}",
+                url=f"https://discord.com/users/{author.id}",
+                icon_url=author.avatar_url,
+            )
 
-        await get(channel.guild.channels, name="message-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -296,14 +307,16 @@ class Logger(commands.Cog):
             member.nick,
         )
 
-        embed = discord.Embed(description=f"**{member.mention} joined**")
-        embed.set_author(
-            name=f"{member} \N{BULLET} {member.id}",
-            url=f"https://discord.com/users/{member.id}",
-            icon_url=member.avatar_url,
-        )
+        log_channel = await self.get_log_channel(member.guild, "member")
+        if log_channel:
+            embed = discord.Embed(description=f"**{member.mention} joined**")
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
 
-        await get(member.guild.channels, name="member-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
@@ -343,27 +356,32 @@ class Logger(commands.Cog):
                 reason,
             )
 
-            embed = discord.Embed(
-                description=f"**{member.mention} got kicked by {moderator.mention}**"
-                f"\n**Reason:** {reason}"
-            )
+            log_channel = await self.get_log_channel(member.guild, "moderator")
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{member.mention} got kicked by {moderator.mention}**"
+                    f"\n**Reason:** {reason}"
+                )
+                embed.set_author(
+                    name=f"{member} \N{BULLET} {member.id}",
+                    url=f"https://discord.com/users/{member.id}",
+                    icon_url=member.avatar_url,
+                )
+
+                await log_channel.send(embed=embed)
+
+            break
+
+        log_channel = await self.get_log_channel(member.guild, "member")
+        if log_channel:
+            embed = discord.Embed(description=f"**{member.mention} left**")
             embed.set_author(
                 name=f"{member} \N{BULLET} {member.id}",
                 url=f"https://discord.com/users/{member.id}",
                 icon_url=member.avatar_url,
             )
 
-            await get(member.guild.channels, name="moderator-logs").send(embed=embed)
-            break
-
-        embed = discord.Embed(description=f"**{member.mention} left**")
-        embed.set_author(
-            name=f"{member} \N{BULLET} {member.id}",
-            url=f"https://discord.com/users/{member.id}",
-            icon_url=member.avatar_url,
-        )
-
-        await get(member.guild.channels, name="member-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -381,19 +399,21 @@ class Logger(commands.Cog):
             after.nick,
         )
 
-        embed = discord.Embed(
-            description=f"**{after.mention} changed nickname**"
-            f"\n{escape(before.nick) if before.nick else '*none*'}"
-            " \N{RIGHTWARDS ARROW}"
-            f" {escape(after.nick) if after.nick else '*none*'}"
-        )
-        embed.set_author(
-            name=f"{after} \N{BULLET} {after.id}",
-            url=f"https://discord.com/users/{after.id}",
-            icon_url=after.avatar_url,
-        )
+        log_channel = await self.get_log_channel(after.guild, "member")
+        if log_channel:
+            embed = discord.Embed(
+                description=f"**{after.mention} changed nickname**"
+                f"\n{escape(before.nick) if before.nick else '*none*'}"
+                " \N{RIGHTWARDS ARROW}"
+                f" {escape(after.nick) if after.nick else '*none*'}"
+            )
+            embed.set_author(
+                name=f"{after} \N{BULLET} {after.id}",
+                url=f"https://discord.com/users/{after.id}",
+                icon_url=after.avatar_url,
+            )
 
-        await get(after.guild.channels, name="member-logs").send(embed=embed)
+            await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
@@ -451,17 +471,20 @@ class Logger(commands.Cog):
                 reason,
             )
 
-            embed = discord.Embed(
-                description=f"**{user.mention} got banned by {moderator.mention}**"
-                f"\n**Reason:** {reason}"
-            )
-            embed.set_author(
-                name=f"{user} \N{BULLET} {user.id}",
-                url=f"https://discord.com/users/{user.id}",
-                icon_url=user.avatar_url,
-            )
+            log_channel = await self.get_log_channel(guild, "moderator")
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{user.mention} got banned by {moderator.mention}**"
+                    f"\n**Reason:** {reason}"
+                )
+                embed.set_author(
+                    name=f"{user} \N{BULLET} {user.id}",
+                    url=f"https://discord.com/users/{user.id}",
+                    icon_url=user.avatar_url,
+                )
 
-            await get(guild.channels, name="moderator-logs").send(embed=embed)
+                await log_channel.send(embed=embed)
+
             break
 
     @commands.Cog.listener()
@@ -493,17 +516,20 @@ class Logger(commands.Cog):
                 log.reason,
             )
 
-            embed = discord.Embed(
-                description=f"**{user.mention} got unbanned by {moderator.mention}**"
-                f"\n**Reason:** {reason}"
-            )
-            embed.set_author(
-                name=f"{user} \N{BULLET} {user.id}",
-                url=f"https://discord.com/users/{user.id}",
-                icon_url=user.avatar_url,
-            )
+            log_channel = await self.get_log_channel(guild, "moderator")
+            if log_channel:
+                embed = discord.Embed(
+                    description=f"**{user.mention} got unbanned by {moderator.mention}**"
+                    f"\n**Reason:** {reason}"
+                )
+                embed.set_author(
+                    name=f"{user} \N{BULLET} {user.id}",
+                    url=f"https://discord.com/users/{user.id}",
+                    icon_url=user.avatar_url,
+                )
 
-            await get(guild.channels, name="moderator-logs").send(embed=embed)
+                await log_channel.send(embed=embed)
+
             break
 
 
