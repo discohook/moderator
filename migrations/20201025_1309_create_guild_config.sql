@@ -11,6 +11,9 @@ SELECT guild_id
 FROM message_metadata
 UNION
 SELECT guild_id
+FROM member_history
+UNION
+SELECT guild_id
 FROM moderator_action;
 
 ALTER TABLE message_metadata
