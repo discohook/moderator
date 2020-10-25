@@ -1,8 +1,6 @@
-# Discobot
+# Discomod
 
-Helper bot for Discohook.
-
-Invite using <https://discord.com/api/oauth2/authorize?client_id=633565743103082527&permissions=537250880&scope=bot>.
+Cool moderation bot
 
 ## Installing
 
@@ -19,6 +17,5 @@ pip install -Ur requirements.txt  # Install dependencies
 Make sure that the virtual environment is active.
 
 ```sh
-export DISCORD_TOKEN=<token>
-python bot.py
+DISCORD_TOKEN=<token> python bot.py
 ```
