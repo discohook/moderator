@@ -24,6 +24,20 @@ configurables = [
         type=str,
     ),
     Configurable(
+        name="join-role",
+        description="Role assigned to all new members.",
+        column="join_role_id",
+        required=False,
+        type=discord.Role,
+    ),
+    Configurable(
+        name="new-member-role",
+        description="Role assigned to all new members, removed after 15 minutes.",
+        column="new_member_role_id",
+        required=False,
+        type=discord.Role,
+    ),
+    Configurable(
         name="member-logs",
         description="Location of logs for member actions.",
         column="member_log_channel_id",
@@ -53,6 +67,7 @@ type_names = {
     float: "number",
     bool: "boolean",
     discord.TextChannel: "text channel",
+    discord.Role: "role",
 }
 
 enabled_values = ("yes", "y", "true", "t", "1", "enable", "on")

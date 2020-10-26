@@ -2,6 +2,7 @@ import re
 from datetime import datetime, timedelta
 
 import discord
+from bot.ext import config
 from discord.ext import commands, tasks
 from discord.utils import get
 
@@ -14,37 +15,43 @@ class Roles(commands.Cog):
         self.add_roles.start()
         super().__init__()
 
+    async def get_role(self, guild: discord.Guild, role_type: str):
+        cfg = self.bot.get_cog("Config")
+        configurable = get(config.configurables, name=f"{role_type}-role")
+        role_id = await cfg.get_value(guild, configurable)
+        return get(guild.roles, id=role_id)
+
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        autorole = get(member.guild.roles, name="Member")
-        restricted = get(member.guild.roles, name="Restricted")
+        join_role = await self.get_role(member.guild, "join")
+        new_member_role = await self.get_role(member.guild, "new-member")
 
-        await member.add_roles(autorole, restricted)
+        await member.add_roles(join_role, new_member_role)
 
     @tasks.loop(minutes=1)
     async def add_roles(self):
         for guild in self.bot.guilds:
-            autorole = get(guild.roles, name="Member")
+            join_role = await self.get_role(guild, "join")
 
             for member in guild.members:
                 if member.bot:
                     continue
-                if autorole.id in [role.id for role in member.roles]:
+                if join_role.id in [role.id for role in member.roles]:
                     continue
 
-                await member.add_roles(autorole)
+                await member.add_roles(join_role)
 
-            restricted = get(guild.roles, name="Restricted")
+            new_member_role = await self.get_role(guild, "new-member")
 
             for member in guild.members:
                 if member.bot:
                     continue
-                if restricted.id not in [role.id for role in member.roles]:
+                if new_member_role.id not in [role.id for role in member.roles]:
                     continue
                 if member.joined_at > datetime.utcnow() - timedelta(minutes=15):
                     continue
 
-                await member.remove_roles(restricted)
+                await member.remove_roles(new_member_role)
 
     @add_roles.before_loop
     async def before_add_roles(self):
