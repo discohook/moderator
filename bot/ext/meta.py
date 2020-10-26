@@ -66,6 +66,8 @@ class Meta(commands.Cog):
                 value = "`yes`" if value else "`no`"
             elif configurable.type is discord.TextChannel:
                 value = f"<#{value}>"
+            elif configurable.type is discord.Role:
+                value = f"<@&{value}>"
             else:
                 value = wrap_in_code(str(value))
 
