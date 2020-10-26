@@ -454,7 +454,7 @@ class Logger(commands.Cog):
             reason = log.reason
 
             if moderator.id == self.bot.user.id:
-                match = re.match("^[(\d+)]: (.+)$", reason)
+                match = re.match(r"^\[(\d+)]: (.+)$", reason)
                 if match:
                     moderator = guild.get_member(int(match.group(1)))
                     reason = match.group(2)
@@ -499,7 +499,7 @@ class Logger(commands.Cog):
             reason = log.reason
 
             if moderator.id == self.bot.user.id:
-                match = re.match("^[(\d+)]: (.+)$", reason)
+                match = re.match(r"^\[(\d+)]: (.+)$", reason)
                 if match:
                     moderator = guild.get_member(int(match.group(1)))
                     reason = match.group(2)
