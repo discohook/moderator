@@ -26,32 +26,30 @@ class Roles(commands.Cog):
         join_role = await self.get_role(member.guild, "join")
         new_member_role = await self.get_role(member.guild, "new-member")
 
-        await member.add_roles(join_role, new_member_role)
+        await member.add_roles(*[role for role in {join_role, new_member_role} if role])
 
     @tasks.loop(minutes=1)
     async def add_roles(self):
         for guild in self.bot.guilds:
-            join_role = await self.get_role(guild, "join")
+            if join_role := await self.get_role(guild, "join"):
+                for member in guild.members:
+                    if member.bot:
+                        continue
+                    if join_role.id in [role.id for role in member.roles]:
+                        continue
 
-            for member in guild.members:
-                if member.bot:
-                    continue
-                if join_role.id in [role.id for role in member.roles]:
-                    continue
+                    await member.add_roles(join_role)
 
-                await member.add_roles(join_role)
+            if new_member_role := await self.get_role(guild, "new-member"):
+                for member in guild.members:
+                    if member.bot:
+                        continue
+                    if new_member_role.id not in [role.id for role in member.roles]:
+                        continue
+                    if member.joined_at > datetime.utcnow() - timedelta(minutes=15):
+                        continue
 
-            new_member_role = await self.get_role(guild, "new-member")
-
-            for member in guild.members:
-                if member.bot:
-                    continue
-                if new_member_role.id not in [role.id for role in member.roles]:
-                    continue
-                if member.joined_at > datetime.utcnow() - timedelta(minutes=15):
-                    continue
-
-                await member.remove_roles(new_member_role)
+                    await member.remove_roles(new_member_role)
 
     @add_roles.before_loop
     async def before_add_roles(self):
