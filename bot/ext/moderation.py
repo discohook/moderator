@@ -96,7 +96,7 @@ class Moderation(commands.Cog):
     ):
         """Silences members for a given reason"""
 
-        role = await self.bot.get_cog("Roles").get_log_channel(ctx.guild, "silence")
+        role = await self.bot.get_cog("Roles").get_role(ctx.guild, "silence")
         await asyncio.wait(
             [
                 asyncio.create_task(
@@ -161,7 +161,7 @@ class Moderation(commands.Cog):
     ):
         """Unsilences members for a given reason"""
 
-        role = await self.bot.get_cog("Roles").get_log_channel(ctx.guild, "silence")
+        role = await self.bot.get_cog("Roles").get_role(ctx.guild, "silence")
         await asyncio.wait(
             [
                 asyncio.create_task(
@@ -304,7 +304,7 @@ class Moderation(commands.Cog):
                 pass
 
             if isinstance(member, discord.Member):
-                role = await self.bot.get_cog("Roles").get_log_channel(guild, "silence")
+                role = await self.bot.get_cog("Roles").get_role(guild, "silence")
                 member.remove_roles(role, reason="Automatically unsilenced")
 
             await self.bot.db.execute(
