@@ -112,7 +112,7 @@ class Meta(commands.Cog):
 
         for configurable in config.configurables:
             paginator.add_field(
-                name=configurable.name.capitalize(),
+                name=configurable.name.title(),
                 value=configurable.description,
             )
 
