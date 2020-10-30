@@ -25,11 +25,54 @@ class Roles(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         join_role = await self.get_role(member.guild, "join")
         new_member_role = await self.get_role(member.guild, "new-member")
+        silence_role = await self.get_role(member.guild, "silence")
 
-        await member.add_roles(*[role for role in {join_role, new_member_role} if role])
+        is_silenced = await self.bot.db.fetchval(
+            """
+            SELECT true FROM moderator_action
+            WHERE action_type = 'silence'
+            AND target_id = $1
+            AND recorded_at > (
+                SELECT recorded_at FROM moderator_action
+                WHERE action_type = 'unsilence'
+                AND moderator_action.target_id = target_id
+                AND moderator_action.guild_id = guild_id
+                ORDER BY recorded_at DESC
+                LIMIT 1
+            )
+            """,
+            member.id,
+        )
+
+        await member.add_roles(
+            *[
+                role
+                for role in {
+                    join_role,
+                    new_member_role,
+                    silence_role if is_silenced else None,
+                }
+                if role
+            ]
+        )
 
     @tasks.loop(minutes=1)
     async def add_roles(self):
+        active_silences = await self.bot.db.fetch(
+            """
+            SELECT guild_id, target_id FROM moderator_action
+            WHERE action_type = 'silence'
+            AND recorded_at > (
+                SELECT recorded_at FROM moderator_action
+                WHERE action_type = 'unsilence'
+                AND moderator_action.target_id = target_id
+                AND moderator_action.guild_id = guild_id
+                ORDER BY recorded_at DESC
+                LIMIT 1
+            )
+            """
+        )
+
         for guild in self.bot.guilds:
             if join_role := await self.get_role(guild, "join"):
                 for member in guild.members:
@@ -50,6 +93,12 @@ class Roles(commands.Cog):
                         continue
 
                     await member.remove_roles(new_member_role)
+
+            if silence_role := await self.get_role(guild, "silence"):
+                for silence in active_silences:
+                    if silence["guild_id"] == guild.id:
+                        member = guild.get_member(silence["target_id"])
+                        await member.add_roles(silence_role)
 
     @add_roles.before_loop
     async def before_add_roles(self):
