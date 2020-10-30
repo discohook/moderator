@@ -38,6 +38,13 @@ configurables = [
         type=discord.Role,
     ),
     Configurable(
+        name="silence-role",
+        description="Role used to silence members using mute commands.",
+        column="silence_role_id",
+        required=False,
+        type=discord.Role,
+    ),
+    Configurable(
         name="member-logs",
         description="Location of logs for member actions.",
         column="member_log_channel_id",
