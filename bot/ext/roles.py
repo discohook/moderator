@@ -31,7 +31,7 @@ class Roles(commands.Cog):
             """
             SELECT true FROM moderator_action s
             WHERE action_type = 'silence'
-            AND recorded_at + duration * interval '1 second' < NOW()
+            AND target_id = $1
             AND recorded_at > (
                 SELECT recorded_at FROM moderator_action u
                 WHERE action_type = 'unsilence'
