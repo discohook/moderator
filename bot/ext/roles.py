@@ -29,14 +29,16 @@ class Roles(commands.Cog):
 
         is_silenced = await self.bot.db.fetchval(
             """
-            SELECT true FROM moderator_action
+            SELECT true FROM moderator_action s
             WHERE action_type = 'silence'
-            AND target_id = $1
+            AND recorded_at + duration * interval '1 second' < NOW()
             AND recorded_at > (
-                SELECT recorded_at FROM moderator_action
+                SELECT recorded_at FROM moderator_action u
                 WHERE action_type = 'unsilence'
-                AND moderator_action.target_id = target_id
-                AND moderator_action.guild_id = guild_id
+                AND s.target_id = u.target_id
+                AND s.guild_id = u.guild_id
+                UNION
+                SELECT date '2015-01-01' AS recorded_at
                 ORDER BY recorded_at DESC
                 LIMIT 1
             )
@@ -60,13 +62,15 @@ class Roles(commands.Cog):
     async def add_roles(self):
         active_silences = await self.bot.db.fetch(
             """
-            SELECT guild_id, target_id FROM moderator_action
+            SELECT guild_id, target_id FROM moderator_action s
             WHERE action_type = 'silence'
             AND recorded_at > (
-                SELECT recorded_at FROM moderator_action
+                SELECT recorded_at FROM moderator_action u
                 WHERE action_type = 'unsilence'
-                AND moderator_action.target_id = target_id
-                AND moderator_action.guild_id = guild_id
+                AND s.target_id = u.target_id
+                AND s.guild_id = u.guild_id
+                UNION
+                SELECT date '2015-01-01' AS recorded_at
                 ORDER BY recorded_at DESC
                 LIMIT 1
             )
