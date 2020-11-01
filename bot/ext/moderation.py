@@ -324,7 +324,7 @@ class Moderation(commands.Cog):
             if isinstance(member, discord.Member):
                 role = await self.bot.get_cog("Roles").get_role(guild, "silence")
                 if role:
-                    member.remove_roles(role, reason="Automatically unsilenced")
+                    await member.remove_roles(role, reason="Automatically unsilenced")
 
             await self.bot.db.execute(
                 """
