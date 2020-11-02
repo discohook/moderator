@@ -29,14 +29,8 @@ class Moderation(commands.Cog):
     ):
         """Bans members for a given reason"""
 
-        await asyncio.wait(
-            [
-                asyncio.create_task(
-                    ctx.guild.ban(member, reason=f"[{ctx.author.id}]: {reason}")
-                )
-                for member in members
-            ]
-        )
+        for member in members:
+            await ctx.guild.ban(member, reason=f"[{ctx.author.id}]: {reason}")
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -51,14 +45,8 @@ class Moderation(commands.Cog):
     ):
         """Unbans members for a given reason"""
 
-        await asyncio.wait(
-            [
-                asyncio.create_task(
-                    ctx.guild.unban(member, reason=f"[{ctx.author.id}]: {reason}")
-                )
-                for member in members
-            ]
-        )
+        for member in members:
+            await ctx.guild.unban(member, reason=f"[{ctx.author.id}]: {reason}")
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -73,14 +61,8 @@ class Moderation(commands.Cog):
     ):
         """Kicks members for a given reason"""
 
-        await asyncio.wait(
-            [
-                asyncio.create_task(
-                    ctx.guild.kick(member, reason=f"[{ctx.author.id}]: {reason}")
-                )
-                for member in members
-            ]
-        )
+        for member in members:
+            await ctx.guild.kick(member, reason=f"[{ctx.author.id}]: {reason}")
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -105,14 +87,8 @@ class Moderation(commands.Cog):
                 )
             )
 
-        await asyncio.wait(
-            [
-                asyncio.create_task(
-                    member.add_roles(role, reason=f"[{ctx.author.id}]: {reason}")
-                )
-                for member in members
-            ]
-        )
+        for member in members:
+            await member.add_roles(role, reason=f"[{ctx.author.id}]: {reason}")
 
         await self.bot.db.executemany(
             """
@@ -178,14 +154,8 @@ class Moderation(commands.Cog):
                 )
             )
 
-        await asyncio.wait(
-            [
-                asyncio.create_task(
-                    member.remove_roles(role, reason=f"[{ctx.author.id}]: {reason}")
-                )
-                for member in members
-            ]
-        )
+        for member in members:
+            await member.remove_roles(role, reason=f"[{ctx.author.id}]: {reason}")
 
         await self.bot.db.executemany(
             """
