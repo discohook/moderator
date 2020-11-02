@@ -339,7 +339,7 @@ class Logger(commands.Cog):
             reason = log.reason
 
             if member.id == self.bot.user.id:
-                match = re.match("^[(\d+)]: (.+)$")
+                match = re.match(r"^[(\d+)]: (.+)$", reason)
                 if match:
                     moderator = member.get_member(int(match.group(1)))
                     reason = match.group(2)
