@@ -43,21 +43,22 @@ class Bot(commands.AutoShardedBot):
             self.load_extension(extension)
 
     async def get_prefix_list(self, bot, message):
-        custom_prefix = await self.get_cog("Config").get_value(
-            message.guild,
-            get(config.configurables, name="prefix"),
-        )
-
         prefixes = [
             f"<@!{bot.user.id}> ",
             f"<@{bot.user.id}> ",
         ]
 
-        if custom_prefix:
-            prefixes[len(prefixes) :] = [
-                custom_prefix + " ",
-                custom_prefix,
-            ]
+        if message.guild:
+            custom_prefix = await self.get_cog("Config").get_value(
+                message.guild,
+                get(config.configurables, name="prefix"),
+            )
+
+            if custom_prefix:
+                prefixes[len(prefixes) :] = [
+                    custom_prefix + " ",
+                    custom_prefix,
+                ]
 
         return prefixes
 
