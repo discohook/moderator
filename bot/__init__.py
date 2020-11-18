@@ -77,16 +77,13 @@ class Bot(commands.AutoShardedBot):
         if message.author.bot:
             return
 
-        if message.guild:
-            await self.get_cog("Config").get_value(
-                message.guild, get(config.configurables, name="prefix")
-            )
-
         if re.fullmatch(rf"<@!?{self.user.id}>", message.content):
-            prefix = await self.get_cog("Config").get_value(
-                message.guild,
-                get(config.configurables, name="prefix"),
-            )
+            prefix = None
+            if message.guild:
+                prefix = await self.get_cog("Config").get_value(
+                    message.guild, get(config.configurables, name="prefix")
+                )
+
             prefix_md = wrap_in_code(prefix) if prefix else self.user.mention
 
             await message.channel.send(
