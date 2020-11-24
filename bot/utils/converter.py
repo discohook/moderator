@@ -17,3 +17,17 @@ class TimeDurationConverter(commands.Converter):
             minutes=int(match.group(3) or 0),
             seconds=int(match.group(4) or 0),
         )
+
+
+class UserConverter(commands.UserConverter):
+    async def convert(self, ctx, argument):
+        try:
+            return await super().convert(ctx, argument)
+        except commands.UserNotFound:
+            if match := self._get_id_match(argument):
+                user_id = int(match.group(1))
+                user = await ctx.bot.fetch_user(user_id)
+                if user:
+                    return user
+
+            raise

@@ -21,7 +21,7 @@ class Moderation(commands.Cog):
     async def ban(
         self,
         ctx: commands.Context,
-        member: typing.Union[commands.MemberConverter, commands.UserConverter],
+        member: typing.Union[commands.MemberConverter, converter.UserConverter],
         *,
         reason: str,
     ):
@@ -36,7 +36,7 @@ class Moderation(commands.Cog):
     async def unban(
         self,
         ctx: commands.Context,
-        member: commands.UserConverter,
+        member: converter.UserConverter,
         *,
         reason: str,
     ):
