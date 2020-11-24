@@ -21,16 +21,13 @@ class Moderation(commands.Cog):
     async def ban(
         self,
         ctx: commands.Context,
-        members: commands.Greedy[
-            typing.Union[commands.MemberConverter, commands.UserConverter]
-        ],
+        member: typing.Union[commands.MemberConverter, commands.UserConverter],
         *,
         reason: str,
     ):
         """Bans members for a given reason"""
 
-        for member in members:
-            await ctx.guild.ban(member, reason=f"[{ctx.author.id}]: {reason}")
+        await ctx.guild.ban(member, reason=f"[{ctx.author.id}]: {reason}")
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -39,14 +36,13 @@ class Moderation(commands.Cog):
     async def unban(
         self,
         ctx: commands.Context,
-        members: commands.Greedy[commands.UserConverter],
+        member: commands.UserConverter,
         *,
         reason: str,
     ):
         """Unbans members for a given reason"""
 
-        for member in members:
-            await ctx.guild.unban(member, reason=f"[{ctx.author.id}]: {reason}")
+        await ctx.guild.unban(member, reason=f"[{ctx.author.id}]: {reason}")
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -55,14 +51,13 @@ class Moderation(commands.Cog):
     async def kick(
         self,
         ctx: commands.Context,
-        members: commands.Greedy[commands.MemberConverter],
+        member: commands.MemberConverter,
         *,
         reason: str,
     ):
         """Kicks members for a given reason"""
 
-        for member in members:
-            await ctx.guild.kick(member, reason=f"[{ctx.author.id}]: {reason}")
+        await ctx.guild.kick(member, reason=f"[{ctx.author.id}]: {reason}")
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -71,7 +66,7 @@ class Moderation(commands.Cog):
     async def silence(
         self,
         ctx: commands.Context,
-        members: commands.Greedy[commands.MemberConverter],
+        member: commands.MemberConverter,
         duration: converter.TimeDurationConverter,
         *,
         reason: str,
@@ -87,50 +82,43 @@ class Moderation(commands.Cog):
                 )
             )
 
-        for member in members:
-            await member.add_roles(role, reason=f"[{ctx.author.id}]: {reason}")
+        await member.add_roles(role, reason=f"[{ctx.author.id}]: {reason}")
 
-        await self.bot.db.executemany(
+        await self.bot.db.execute(
             """
             INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, duration, reason)
             VALUES ($1, $2, $3, 'silence', NOW(), $4, $5)
             """,
-            [
-                (
-                    ctx.guild.id,
-                    member.id,
-                    ctx.author.id,
-                    int(duration.total_seconds()),
-                    reason,
-                )
-                for member in members
-            ],
+            ctx.guild.id,
+            member.id,
+            ctx.author.id,
+            int(duration.total_seconds()),
+            reason,
         )
 
-        for member in members:
-            try:
-                await member.send(
-                    f"**You were silenced in {ctx.guild} by {ctx.author.mention} for {duration}**"
-                    f"\n**Reason:** {reason}"
-                )
-            except discord.HTTPException:
-                pass
-
-            log_channel = await self.bot.get_cog("Logger").get_log_channel(
-                ctx.guild, "moderator"
+        try:
+            await member.send(
+                f"**You were silenced in {ctx.guild} by {ctx.author.mention} for {duration}**"
+                f"\n**Reason:** {reason}"
             )
-            if log_channel:
-                embed = discord.Embed(
-                    description=f"**{member.mention} got silenced by {ctx.author.mention} for {duration}**"
-                    f"\n**Reason:** {reason}"
-                )
-                embed.set_author(
-                    name=f"{member} \N{BULLET} {member.id}",
-                    url=f"https://discord.com/users/{member.id}",
-                    icon_url=member.avatar_url,
-                )
+        except discord.HTTPException:
+            pass
 
-                await log_channel.send(embed=embed)
+        log_channel = await self.bot.get_cog("Logger").get_log_channel(
+            ctx.guild, "moderator"
+        )
+        if log_channel:
+            embed = discord.Embed(
+                description=f"**{member.mention} got silenced by {ctx.author.mention} for {duration}**"
+                f"\n**Reason:** {reason}"
+            )
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
+
+            await log_channel.send(embed=embed)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
@@ -139,7 +127,7 @@ class Moderation(commands.Cog):
     async def unsilence(
         self,
         ctx: commands.Context,
-        members: commands.Greedy[commands.MemberConverter],
+        member: commands.MemberConverter,
         *,
         reason: str,
     ):
@@ -154,47 +142,40 @@ class Moderation(commands.Cog):
                 )
             )
 
-        for member in members:
-            await member.remove_roles(role, reason=f"[{ctx.author.id}]: {reason}")
+        await member.remove_roles(role, reason=f"[{ctx.author.id}]: {reason}")
 
         await self.bot.db.executemany(
             """
             INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
             VALUES ($1, $2, $3, 'unsilence', NOW(), $4)
             """,
-            [
-                (
-                    ctx.guild.id,
-                    member.id,
-                    ctx.author.id,
-                    reason,
-                )
-                for member in members
-            ],
+            ctx.guild.id,
+            member.id,
+            ctx.author.id,
+            reason,
         )
 
-        for member in members:
-            try:
-                await member.send(
-                    f"**You were unsilenced in {ctx.guild} by {ctx.author.mention}**"
-                    f"\n**Reason:** {reason}"
-                )
-            except discord.HTTPException:
-                pass
-
-            log_channel = await self.bot.get_cog("Logger").get_log_channel(
-                ctx.guild, "moderator"
+        try:
+            await member.send(
+                f"**You were unsilenced in {ctx.guild} by {ctx.author.mention}**"
+                f"\n**Reason:** {reason}"
             )
-            if log_channel:
-                embed = discord.Embed(
-                    description=f"**{member.mention} got unsilenced by {ctx.author.mention}**"
-                    f"\n**Reason:** {reason}"
-                )
-                embed.set_author(
-                    name=f"{member} \N{BULLET} {member.id}",
-                    url=f"https://discord.com/users/{member.id}",
-                    icon_url=member.avatar_url,
-                )
+        except discord.HTTPException:
+            pass
+
+        log_channel = await self.bot.get_cog("Logger").get_log_channel(
+            ctx.guild, "moderator"
+        )
+        if log_channel:
+            embed = discord.Embed(
+                description=f"**{member.mention} got unsilenced by {ctx.author.mention}**"
+                f"\n**Reason:** {reason}"
+            )
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
 
             await log_channel.send(embed=embed)
 
@@ -205,7 +186,7 @@ class Moderation(commands.Cog):
     async def warn(
         self,
         ctx: commands.Context,
-        members: commands.Greedy[commands.MemberConverter],
+        member: commands.MemberConverter,
         *,
         reason: str,
     ):
@@ -216,41 +197,35 @@ class Moderation(commands.Cog):
             INSERT INTO moderator_action (guild_id, target_id, moderator_id, action_type, recorded_at, reason)
             VALUES ($1, $2, $3, 'warn', NOW(), $4)
             """,
-            [
-                (
-                    ctx.guild.id,
-                    member.id,
-                    ctx.author.id,
-                    reason,
-                )
-                for member in members
-            ],
+            ctx.guild.id,
+            member.id,
+            ctx.author.id,
+            reason,
         )
 
-        for member in members:
-            try:
-                await member.send(
-                    f"**You were warned in {ctx.guild} by {ctx.author.mention}**"
-                    f"\n**Reason:** {reason}"
-                )
-            except discord.HTTPException:
-                pass
-
-            log_channel = await self.bot.get_cog("Logger").get_log_channel(
-                ctx.guild, "moderator"
+        try:
+            await member.send(
+                f"**You were warned in {ctx.guild} by {ctx.author.mention}**"
+                f"\n**Reason:** {reason}"
             )
-            if log_channel:
-                embed = discord.Embed(
-                    description=f"**{member.mention} got warned by {ctx.author.mention}**"
-                    f"\n**Reason:** {reason}"
-                )
-                embed.set_author(
-                    name=f"{member} \N{BULLET} {member.id}",
-                    url=f"https://discord.com/users/{member.id}",
-                    icon_url=member.avatar_url,
-                )
+        except discord.HTTPException:
+            pass
 
-                await log_channel.send(embed=embed)
+        log_channel = await self.bot.get_cog("Logger").get_log_channel(
+            ctx.guild, "moderator"
+        )
+        if log_channel:
+            embed = discord.Embed(
+                description=f"**{member.mention} got warned by {ctx.author.mention}**"
+                f"\n**Reason:** {reason}"
+            )
+            embed.set_author(
+                name=f"{member} \N{BULLET} {member.id}",
+                url=f"https://discord.com/users/{member.id}",
+                icon_url=member.avatar_url,
+            )
+
+            await log_channel.send(embed=embed)
 
         await ctx.message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
 
