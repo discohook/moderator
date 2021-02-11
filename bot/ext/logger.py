@@ -206,7 +206,7 @@ class Logger(commands.Cog):
             event.message_id,
         )
 
-        if old_content == event.data["content"]:
+        if not old_content or old_content == event.data["content"]:
             return
 
         version_at = datetime.strptime(
