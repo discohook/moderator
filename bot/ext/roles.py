@@ -87,7 +87,7 @@ class Roles(commands.Cog):
         for guild in self.bot.guilds:
             if join_role := await self.get_role(guild, "join"):
                 for member in guild.members:
-                    if member.bot:
+                    if member.bot or member.pending:
                         continue
                     if join_role.id in [role.id for role in member.roles]:
                         continue
@@ -96,7 +96,7 @@ class Roles(commands.Cog):
 
             if new_member_role := await self.get_role(guild, "new-member"):
                 for member in guild.members:
-                    if member.bot:
+                    if member.bot or member.pending:
                         continue
                     if new_member_role.id not in [role.id for role in member.roles]:
                         continue
@@ -109,7 +109,7 @@ class Roles(commands.Cog):
                 for silence in active_silences:
                     if silence["guild_id"] == guild.id:
                         member = guild.get_member(silence["target_id"])
-                        if member:
+                        if member and not member.pending:
                             await member.add_roles(silence_role)
 
     @add_roles.before_loop
