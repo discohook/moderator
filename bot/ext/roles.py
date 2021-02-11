@@ -22,7 +22,10 @@ class Roles(commands.Cog):
         return get(guild.roles, id=role_id)
 
     @commands.Cog.listener()
-    async def on_member_join(self, member: discord.Member):
+    async def on_member_update(self, before: discord.Member, member: discord.Member):
+        if member.pending or not before.pending:
+            return
+
         join_role = await self.get_role(member.guild, "join")
         new_member_role = await self.get_role(member.guild, "new-member")
         silence_role = await self.get_role(member.guild, "silence")
