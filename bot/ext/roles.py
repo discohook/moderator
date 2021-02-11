@@ -102,7 +102,8 @@ class Roles(commands.Cog):
                 for silence in active_silences:
                     if silence["guild_id"] == guild.id:
                         member = guild.get_member(silence["target_id"])
-                        await member.add_roles(silence_role)
+                        if member:
+                            await member.add_roles(silence_role)
 
     @add_roles.before_loop
     async def before_add_roles(self):
