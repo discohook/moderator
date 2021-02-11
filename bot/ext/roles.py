@@ -15,6 +15,10 @@ class Roles(commands.Cog):
         self.add_roles.start()
         super().__init__()
 
+    def cog_unload(self):
+        self.add_roles.cancel()
+        return super().cog_unload()
+
     async def get_role(self, guild: discord.Guild, role_type: str):
         cfg = self.bot.get_cog("Config")
         configurable = get(config.configurables, name=f"{role_type}-role")

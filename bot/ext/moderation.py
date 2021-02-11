@@ -16,6 +16,10 @@ class Moderation(commands.Cog):
         self.auto_unsilence.start()
         super().__init__()
 
+    def cog_unload(self):
+        self.auto_unsilence.cancel()
+        return super().cog_unload()
+
     @commands.command()
     @commands.has_guild_permissions(ban_members=True)
     async def ban(
